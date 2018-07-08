@@ -346,11 +346,13 @@ enum field_visibility_t {
   INVISIBLE_FULL
 };
 
-#define INVISIBLE_MAX_BITS 3
-#define HA_HASH_KEY_LENGTH_WITHOUT_NULL 8
+#define INVISIBLE_MAX_BITS              3
+/* We will store the info into 3rd bit if field is hash field */
+#define HASH_FIELD_MASK                 15
+#define HASH_FIELD_MASK_SHIFT           4
 #define HA_HASH_FIELD_LENGTH            8
+#define HA_HASH_KEY_LENGTH_WITHOUT_NULL 8
 #define HA_HASH_KEY_LENGTH_WITH_NULL    9
-
 
 /**
   Category of table found in the table share.

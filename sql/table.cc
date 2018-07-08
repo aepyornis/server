@@ -747,7 +747,13 @@ static bool create_key_infos(const uchar *strpos, const uchar *frm_image_end,
     if (i == 0)
     {
       ext_key_parts+= (share->use_ext_keys ? first_keyinfo->user_defined_key_parts*(keys-1) : 0); 
-      n_length=keys * sizeof(KEY) + ext_key_parts * sizeof(KEY_PART_INFO);
+      /*
+        Some keys can be HA_UNIQUE_HASH , but we do not know at this point ,
+        how many ?, but will always be less than or equal to total num of
+        keys. Each HA_UNIQUE_HASH key require one extra key_part in which
+        it stored hash. On safe side we will allocate memory for each key.
+       */
+      n_length=keys * sizeof(KEY) + (ext_key_parts +keys) * sizeof(KEY_PART_INFO);
       if (!(keyinfo= (KEY*) alloc_root(&share->mem_root,
 				       n_length + len)))
         return 1;
@@ -797,6 +803,14 @@ static bool create_key_infos(const uchar *strpos, const uchar *frm_image_end,
 	strpos+=7;
       }
       key_part->store_length=key_part->length;
+    }
+    if (keyinfo->algorithm == HA_KEY_ALG_LONG_HASH)
+    {
+      keyinfo->flags|= HA_UNIQUE_HASH | HA_NOSAME;
+      keyinfo->key_length= 0;
+      share->ext_key_parts++;
+      // This empty key_part for storing Hash
+      key_part++;
     }
 
     /*
@@ -1251,12 +1265,14 @@ int TABLE_SHARE::init_from_binary_frm_image(THD *thd, bool write,
   uint db_create_options, keys, key_parts, n_length;
   uint com_length, null_bit_pos, UNINIT_VAR(mysql57_vcol_null_bit_pos), bitmap_count;
   uint i;
+  uint field_additional_property_length= 0;
   bool use_hash, mysql57_null_bits= 0;
   char *keynames, *names, *comment_pos;
   const uchar *forminfo, *extra2;
   const uchar *frm_image_end = frm_image + frm_length;
   uchar *record, *null_flags, *null_pos, *UNINIT_VAR(mysql57_vcol_null_pos);
   const uchar *disk_buff, *strpos;
+  const uchar * field_properties=NULL;
   ulong pos, record_offset;
   ulong rec_buff_length;
   handler *handler_file= 0;
