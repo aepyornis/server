@@ -3240,8 +3240,8 @@ sub mysql_install_db {
                             $bootstrap_sql_file);
 
       # mysql.gtid_slave_pos was created in InnoDB, but many tests
-      # run without InnoDB. Alter it to MyISAM now
-      mtr_tofile($bootstrap_sql_file, "ALTER TABLE gtid_slave_pos ENGINE=MyISAM;\n");
+      # run without InnoDB. Alter it to Aria now
+      mtr_tofile($bootstrap_sql_file, "ALTER TABLE gtid_slave_pos ENGINE=Aria transactional=0;\n");
     }
     else
     {
