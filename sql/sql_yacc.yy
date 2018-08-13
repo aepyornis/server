@@ -10619,7 +10619,7 @@ function_call_conflict:
         | HASH_SYM '(' expr_list ')'
           {
             $$= new (thd->mem_root)Item_func_hash(thd,*$3);
-            if ($$ == NULL)
+            if (unlikely($$ == NULL))
               MYSQL_YYABORT;
           }
           /* LAST_VALUE here conflicts with the definition for window functions.

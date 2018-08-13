@@ -3358,12 +3358,11 @@ static void add_hash_field(THD * thd, List<Create_field> *create_list,
 {
   List_iterator<Create_field> it(*create_list);
   Create_field *dup_field, *cf= new (thd->mem_root) Create_field();
-  cf->flags|= UNSIGNED_FLAG;
+  cf->flags|= UNSIGNED_FLAG | LONG_UNIQUE_HASH_FIELD;
   cf->charset= cs;
   cf->decimals= 0;
   cf->length= cf->char_length= cf->pack_length= HA_HASH_FIELD_LENGTH;
   cf->invisible= INVISIBLE_FULL;
-  cf->long_field_hash= true;
   uint num= 1;
   char *temp_name= (char *)thd->alloc(30);
   my_snprintf(temp_name, 30, "DB_ROW_HASH_%u", num);
